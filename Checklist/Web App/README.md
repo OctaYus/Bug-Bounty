@@ -1,12 +1,9 @@
 # Bug Bounty Checklist for Web App
 
-> This checklist may help you to have a good methodology for bug bounty hunting  
-When you have done a action, don't forget to check ;)  
-Happy hunting !  
 
 ## Table of Contents
 
-* [Recon on wildcard domain](#"Recon_on_wildcard_domain")
+* [Recon on wildcard domain](#Recon_on_wildcard_domain)
 * [Single domain](#Single_domain)
 * [Information Gathering](#Information)
 * [Configuration Management](#Configuration)
@@ -22,7 +19,6 @@ Happy hunting !
 * [Risky Functionality - Card Payment](#Card)
 * [HTML 5](#HTML)
 
-
 ## <a name="Recon_on_wildcard_domain">Recon on wildcard domain</a>  
 This recon process is from [0xpatrick subdomain enumeration workflow](https://0xpatrik.com/subdomain-enumeration-2019/)
 
@@ -33,7 +29,8 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Run massdns
 - [ ] Run altdns
 - [ ] Run massdns
-
+- [ ] Enumerate CDN-specific subdomains (e.g., Cloudflare, Akamai)
+- [ ] Look for exposed .well-known/ files
 
 ## <a name="Single_domain">Single Domain</a>  
 
@@ -72,7 +69,9 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Identify all hostnames and ports  
 - [ ] Identify third-party hosted content  
 - [ ] Identify Debug parameters  
-
+- [ ] Identify exposed GraphQL introspection  
+- [ ] Look for exposed Postman/Swagger collections  
+- [ ] Identify leaked source maps (.map files)  
 
 ### <a name="Configuration">Configuration Management</a>
 
@@ -84,7 +83,8 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Test for policies (e.g. Flash, Silverlight, robots)  
 - [ ] Test for non-production data in live environment, and vice-versa  
 - [ ] Check for sensitive data in client-side code (e.g. API keys, credentials)  
-
+- [ ] Check .env, .git, .svn exposed files  
+- [ ] Check for SSRF via cloud metadata services (AWS, GCP, etc.)  
 
 ### <a name="Transmission">Secure Transmission</a>
 
@@ -94,8 +94,7 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Check that the login form is delivered over HTTPS  
 - [ ] Check session tokens only delivered over HTTPS  
 - [ ] Check if HTTP Strict Transport Security (HSTS) in use  
-
-
+- [ ] Check for mixed-content over HTTPS  
 
 ### <a name="Authentication">Authentication</a>
 - [ ] Test for user enumeration  
@@ -114,8 +113,8 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Test for user-accessible authentication history  
 - [ ] Test for out-of channel notification of account lockouts and successful password changes  
 - [ ] Test for consistent authentication across applications with shared authentication schema / SSO  
-
-
+- [ ] Check for authentication via front-end only (e.g., Firebase/Auth0 misconfigs)  
+- [ ] Test session revocation via JWT blacklist mechanism  
 
 ### <a name="Session">Session Management</a>
 - [ ] Establish how session management is handled in the application (eg, tokens in cookies, token in URL)  
@@ -131,8 +130,7 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Test for consistent session management across applications with shared session management  
 - [ ] Test for session puzzling  
 - [ ] Test for CSRF and clickjacking  
-
-
+- [ ] Look for exposed session tokens in browser storage (e.g., localStorage, sessionStorage)  
 
 ### <a name="Authorization">Authorization</a>
 - [ ] Test for path traversal  
@@ -140,7 +138,8 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Test for vertical Access control problems (a.k.a. Privilege Escalation)  
 - [ ] Test for horizontal Access control problems (between two users at the same privilege level)  
 - [ ] Test for missing authorization  
-
+- [ ] Test GraphQL mutations with insufficient auth  
+- [ ] Check if WebSocket actions require authorization  
 
 ### <a name="Validation">Data Validation</a>
 - [ ] Test for Reflected Cross Site Scripting  
@@ -174,13 +173,18 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Test for auto-binding  
 - [ ] Test for Mass Assignment  
 - [ ] Test for NULL/Invalid Session Cookie  
+- [ ] Test for Prototype Pollution (Client & Server)  
+- [ ] Test for Server-Side Template Injection (SSTI)  
+- [ ] Test for deserialization attacks  
+- [ ] Test for parameter pollution in nested JSON objects  
 
 ### <a name="Denial">Denial of Service</a>
 - [ ] Test for anti-automation  
 - [ ] Test for account lockout  
 - [ ] Test for HTTP protocol DoS  
 - [ ] Test for SQL wildcard DoS  
-
+- [ ] Test GraphQL queries for nested recursive fields (DoS via introspection)  
+- [ ] Test ReDoS with large regex patterns in user input  
 
 ### <a name="Business">Business Logic</a>
 - [ ] Test for feature misuse  
@@ -188,7 +192,8 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Test for trust relationships  
 - [ ] Test for integrity of data  
 - [ ] Test segregation of duties  
-
+- [ ] Abuse filtering logic (e.g., search, sort, export)  
+- [ ] Test coupon stacking or unintended discounts  
 
 ### <a name="Cryptography">Cryptography</a>
 - [ ] Check if data which should be encrypted is not  
@@ -196,7 +201,8 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Check for weak algorithms usage  
 - [ ] Check for proper use of salting  
 - [ ] Check for randomness functions  
-
+- [ ] Check for JWT none algorithm support  
+- [ ] Inspect public key exposure via .well-known/jwks.json  
 
 ### <a name="File">Risky Functionality - File Uploads</a>
 - [ ] Test that acceptable file types are whitelisted  
@@ -207,7 +213,8 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Test that uploaded files are not directly accessible within the web root  
 - [ ] Test that uploaded files are not served on the same hostname/port  
 - [ ] Test that files and other media are integrated with the authentication and authorisation schemas  
-
+- [ ] Test for SVG with embedded scripts  
+- [ ] Test for polyglot file upload (e.g., jpg+php)  
 
 ### <a name="Card">Risky Functionality - Card Payment</a>
 - [ ] Test for known vulnerabilities and configuration issues on Web Server and Web Application  
@@ -222,17 +229,11 @@ This recon process is from [0xpatrick subdomain enumeration workflow](https://0x
 - [ ] Test for Authentication and Authorization issues  
 - [ ] Test for CSRF  
 
-
 ### <a name="HTML">HTML 5</a>
 - [ ] Test Web Messaging  
 - [ ] Test for Web Storage SQL injection  
 - [ ] Check CORS implementation  
 - [ ] Check Offline Web Application  
+- [ ] Inspect postMessage() listeners for origin validation  
+- [ ] Check for SRI (Subresource Integrity) on external scripts  
 
-Source:  
-[OWASP](https://www.owasp.org/index.php/Web_Application_Security_Testing_Cheat_Sheet)  
-[OWASP] https://github.com/OWASP/CheatSheetSeries
-[0xpatrick subdomain enumeration workflow](https://0xpatrik.com/subdomain-enumeration-2019/)
-
-Credits:-
-- [Sehno](https://github.com/sehno/Bug-bounty)
